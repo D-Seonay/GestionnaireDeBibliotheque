@@ -263,7 +263,7 @@ while True:
             print("Choix invalide.")
 
     elif choix == "7":
-        biblio.retourner_livre()
+        break
         
     else:
         print("Choix invalide !")
