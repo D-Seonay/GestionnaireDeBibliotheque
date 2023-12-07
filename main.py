@@ -83,6 +83,10 @@ class Bibliotheque:
     def enregistrer_utilisateur(self, utilisateur):
         self.utilisateurs.append(utilisateur)
         
+    def supprimer_utilisateur(self, utilisateur):
+        if utilisateur in self.utilisateurs:
+            self.utilisateurs.remove(utilisateur)
+    
     def livres_par_categorie(self, categorie):
         livres_par_cat = [livre for livre in self.livres if livre.categorie == categorie]
         if livres_par_cat:
@@ -121,9 +125,29 @@ class Bibliotheque:
             print("Aucun livre emprunté.")
             
     def afficher_utilisateurs(self):
-        for utilisateur in self.utilisateurs:
-            print(f"- {utilisateur.prenom} {utilisateur.nom}")
+        print("Liste des utilisateurs :")
+        for i, utilisateur in enumerate(self.utilisateurs):
+            print(f"{i+1}. {utilisateur.prenom} {utilisateur.nom}")
 
+            
+    def choix_utilisateur(self):
+        self.afficher_utilisateurs()
+        choix = input("Entrez le numéro de l'utilisateur : ")
+        try:
+            choix = int(choix)
+            return self.utilisateurs[choix - 1]
+        except (ValueError, IndexError):
+            print("Choix invalide.")
+            return self.choix_utilisateur()
+        
+    def rechercher_livre(self, titre, auteur):
+        input("Titre : ")
+        input("Auteur : ")
+        if titre in self.livres or auteur in self.livres:
+            print("Le livre existe.")
+        else:
+            print("Le livre n'existe pas.")
+    
 def choisir_categorie():
     print("Choisissez une catégorie :")
     print("1. Fiction")
@@ -168,16 +192,26 @@ biblio = Bibliotheque()
 
 while True:
     print("Que voulez-vous faire ?")
-    print("1. Ajouter un livre")
-    print("2. Retirer un livre")
-    print("3. Afficher les livres par catégorie")
-    print("4. Enregistrer un utilisateur")
-    print("5. Emprunter un livre")
-    print("6. Retourner un livre")
-    print("7. Quitter")
+    print("1. Afficher les livres")
+    print("2. Ajouter un livre")
+    print("3. Retirer un livre")
+    print("4. Afficher les livres par catégorie")
+    print("5. Afficher les utilisateurs")
+    print("6. Enregistrer un utilisateur")
+    print("7. Supprimer un utilisateur")
+    print("8. Afficher les livres disponibles")
+    print("9. Afficher les livres empruntés")
+    print("10. Emprunter un livre")
+    print("11. Retourner un livre")
+    print("12. Quitter")
     choix = input("Votre choix : ")
     
     if choix == "1":
+        print("Liste des livres :")
+        for i, livre in enumerate(biblio.livres):
+            print(f"{i+1}. {livre.titre} par {livre.auteur}")
+    
+    elif choix == "2":
         titre = input("Titre : ")
         auteur = input("Auteur : ")
         categorie = choisir_categorie()  # Appel de la fonction pour choisir la catégorie
@@ -203,7 +237,7 @@ while True:
         print("Livre ajouté !")
         print(f"Nombre de livres de la catégorie {categorie} : {len([livre for livre in biblio.livres if livre.categorie == categorie])}")
 
-    elif choix == "2":
+    elif choix == "3":
         titre = input("Titre : ")
         auteur = input("Auteur : ")
         categorie = choisir_categorie() 
@@ -226,32 +260,56 @@ while True:
             continue
         biblio.retirer_livre(livre)
         print("Livre retiré !")
-    elif choix == "3":
+    elif choix == "4":
         categorie = choisir_categorie()
         biblio.livres_par_categorie(categorie)
-    elif choix == "4":
+        
+    elif choix == "5":
+        biblio.afficher_utilisateurs()
+        
+    elif choix == "6":
         nom = input("Nom de l'utilisateur : ")
         prenom = input("Prénom de l'utilisateur : ")
         utilisateur = Utilisateur(nom, prenom)
         biblio.enregistrer_utilisateur(utilisateur)
         print("Utilisateur enregistré !")
-    elif choix == "5":
+    
+    elif choix == "7":
+        biblio.afficher_utilisateurs()
+        choix_utilisateur = input("Entrez le numéro de l'utilisateur : ")
+        try:
+            choix_utilisateur = int(choix_utilisateur)
+            suprim_utilisateur = [utilisateur for utilisateur in biblio.utilisateurs][choix_utilisateur - 1]
+            biblio.supprimer_utilisateur(suprim_utilisateur)
+            print(f"Vous avez supprimé l'utilisateur {suprim_utilisateur.prenom} {suprim_utilisateur.nom}.")
+        except (ValueError, IndexError):
+            print("Choix invalide.")
+        
+    
+    elif choix == "8":
+        biblio.afficher_livres_disponibles()
+    
+    elif choix == "9":
+        biblio.afficher_livres_empruntes()
+        
+    elif choix == "10":
         biblio.afficher_livres_disponibles()
         choix_livre = input("Entrez le numéro du livre que vous souhaitez emprunter : ")
         try:
             choix_livre = int(choix_livre)
             livre_choisi = [livre for livre in biblio.livres if livre.disponible()][choix_livre - 1]
             # Demandez les détails de l'utilisateur pour l'emprunt
-            nom = input("Nom de l'utilisateur : ")
-            prenom = input("Prénom de l'utilisateur : ")
-            utilisateur = Utilisateur(nom, prenom)
+            biblio.afficher_utilisateurs()
+            utilisateur = biblio.choix_utilisateur()
             if livre_choisi.emprunter(utilisateur):
                 print(f"Vous avez emprunté '{livre_choisi.titre}' par {livre_choisi.auteur}.")
             else:
                 print("Ce livre n'est pas disponible pour l'emprunt.")
         except (ValueError, IndexError):
             print("Choix invalide.")
-    elif choix == "6":
+            
+            
+    elif choix == "11":
         biblio.afficher_livres_empruntes()
         choix_livre = input("Entrez le numéro du livre que vous souhaitez retourner : ")
         try:
@@ -262,7 +320,7 @@ while True:
         except (ValueError, IndexError):
             print("Choix invalide.")
 
-    elif choix == "7":
+    elif choix == "12":
         break
         
     else:
