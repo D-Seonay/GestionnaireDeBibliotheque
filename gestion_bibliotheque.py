@@ -1,3 +1,4 @@
+import json
 class Livre:
     def __init__(self, titre, auteur, categorie):
         self.titre = titre
@@ -167,7 +168,61 @@ class Bibliotheque:
             
         else:
             print("Le livre n'existe pas.")
-    
+            
+    def sauvegarder_etat_bibliotheque(self, data_file):
+                etat = {
+                    "livres": [],
+                    "utilisateurs": []
+                }
+                    
+                for livre in self.livres:
+                    etat_livre = {
+                        "titre": livre.titre,
+                        "auteur": livre.auteur,
+                        "categorie": livre.categorie,
+                        "disponible": livre.disponible(),
+                        "emprunte_par": None
+                    }
+                        
+                    if not livre.disponible():
+                            etat_livre["emprunte_par"] = {
+                                "nom": livre.emprunte_par.nom,
+                                "prenom": livre.emprunte_par.prenom
+                            }
+                        
+                    etat["livres"].append(etat_livre)
+                    
+                for utilisateur in self.utilisateurs:
+                        etat_utilisateur = {
+                            "nom": utilisateur.nom,
+                            "prenom": utilisateur.prenom
+                        }
+                        
+                        etat["utilisateurs"].append(etat_utilisateur)
+                    
+                with open(data_file, "w") as fichier:
+                        json.dump(etat, fichier)
+            
+    def charger_etat(self, data_file):
+            with open(data_file, "r") as fichier:
+                etat = json.load(fichier)
+
+                for livre_data in etat["livres"]:
+                    livre = Livre(
+                        livre_data["titre"],
+                        livre_data["auteur"],
+                        livre_data["categorie"]
+                    )
+                    livre.emprunte_par = livre_data["emprunte_par"]  # Mettre à jour l'emprunteur si le livre n'est pas disponible
+                    self.ajouter_livre(livre)
+
+                for utilisateur_data in etat["utilisateurs"]:
+                    utilisateur = Utilisateur(
+                        utilisateur_data["nom"],
+                        utilisateur_data["prenom"]
+                    )
+                    self.enregistrer_utilisateur(utilisateur)
+  
 def choisir_categorie():
     print("Choisissez une catégorie :")
     print("1. Fiction")
@@ -197,9 +252,6 @@ def choisir_categorie():
         print("Choix invalide !")
         return choisir_categorie()
 
-
-    # ... d'autres méthodes pour gérer les emprunts, les retours, etc.
-
 # Utilisation d'un dictionnaire pour simuler le "switch"
 actions = {
     'ajouter_livre': Bibliotheque.ajouter_livre,
@@ -209,6 +261,9 @@ actions = {
 }
 
 biblio = Bibliotheque()
+biblio.charger_etat("etat_bibliotheque.json")
+
+
 
 while True:
     print("Que voulez-vous faire ?")
@@ -223,7 +278,8 @@ while True:
     print("9. Afficher les livres empruntés")
     print("10. Emprunter un livre")
     print("11. Retourner un livre")
-    print("12. Quitter")
+    print("12. Sauvegarder l'état de la bibliothèque")
+    print("13. Quitter")
     choix = input("Votre choix : ")
     
     if choix == "1":
@@ -232,7 +288,7 @@ while True:
     elif choix == "2":
         titre = input("Titre : ")
         auteur = input("Auteur : ")
-        categorie = choisir_categorie()  # Appel de la fonction pour choisir la catégorie
+        categorie = choisir_categorie()
         if categorie == "Fiction":
             livre = LivreFiction(titre, auteur)
         elif categorie == "Non-Fiction":
@@ -337,11 +393,12 @@ while True:
             print(f"Vous avez retourné '{livre_choisi.titre}' par {livre_choisi.auteur}.")
         except (ValueError, IndexError):
             print("Choix invalide.")
-
     elif choix == "12":
+        biblio.sauvegarder_etat_bibliotheque("etat_bibliotheque.json")
+    
+    elif choix == "13":
+        biblio.sauvegarder_etat_bibliotheque("etat_bibliotheque.json")
         break
         
     else:
         print("Choix invalide !")
-        
-        
