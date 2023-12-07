@@ -137,14 +137,34 @@ class Bibliotheque:
             choix = int(choix)
             return self.utilisateurs[choix - 1]
         except (ValueError, IndexError):
-            print("Choix invalide.")
+            print("Veuillez choisir un utilisateur existant.")
             return self.choix_utilisateur()
         
-    def rechercher_livre(self, titre, auteur):
-        input("Titre : ")
-        input("Auteur : ")
-        if titre in self.livres or auteur in self.livres:
+    def rechercher_livre(self):
+        titre = input("Titre : ")
+        auteur = input("Auteur : ")
+        livre_existe = False
+        for livre in self.livres:
+            if livre.titre == titre or livre.auteur == auteur:
+                livre_existe = True
+                break
+        if livre_existe:
             print("Le livre existe.")
+            print(f"Titre : {livre.titre}")
+            print(f"Auteur : {livre.auteur}")
+            print(f"Categorie : {livre.categorie}")
+            if livre.disponible():
+                print("Le livre est disponible.")
+                print("Vous pouvez l'emprunter.")
+                if input("Voulez-vous l'emprunter ? (O/N) : ").upper() == "O":
+                    self.emprunter_livre(livre, biblio.choix_utilisateur())
+                else:
+                    print("Vous n'avez pas emprunté le livre.")
+            else:
+                print("Le livre n'est pas disponible.")
+                print(f"Emprunté par : {livre.emprunte_par.prenom} {livre.emprunte_par.nom}")
+                
+            
         else:
             print("Le livre n'existe pas.")
     
@@ -192,7 +212,7 @@ biblio = Bibliotheque()
 
 while True:
     print("Que voulez-vous faire ?")
-    print("1. Afficher les livres")
+    print("1. Rechercher un livre")
     print("2. Ajouter un livre")
     print("3. Retirer un livre")
     print("4. Afficher les livres par catégorie")
@@ -207,9 +227,7 @@ while True:
     choix = input("Votre choix : ")
     
     if choix == "1":
-        print("Liste des livres :")
-        for i, livre in enumerate(biblio.livres):
-            print(f"{i+1}. {livre.titre} par {livre.auteur}")
+        biblio.rechercher_livre()
     
     elif choix == "2":
         titre = input("Titre : ")
